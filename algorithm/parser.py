@@ -55,6 +55,9 @@ class Parser(object):
     def __str__(self):
         return self.data.__str__()
 
+    def get_parsed_data(self):
+        return self.data
+
 
 def main():
     parser = Parser('../data/instance.txt')

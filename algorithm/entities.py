@@ -11,29 +11,22 @@ class Link(object):
         self.throughput = throughput
 
 
-class Edge(object):
-
-    def __init__(self, from_node, to_node, delay, throughput, power_usage):
-        assert from_node != to_node, 'Link is between two different nodes.'
-        for node in [from_node, to_node]:
-            assert isinstance(node, Node), 'Nodes should be an instance of Node.'
-
-        self.delay = delay
-        self.throughput = throughput
-        self.power_usage = power_usage
-
-
 class Node(object):
 
     def __init__(self, servers, power_usage):
         for server in servers:
-            assert isinstance(server, Server), "Servers should be instance of Server."
+            assert isinstance(server, Server), "Servers should be an instance of Server."
 
         self.servers = servers
         self.power_usage = power_usage
+        self.adjacent_nodes = []
 
     def number_of_servers(self):
         return len(self.servers)
+
+    def add_adjacent_node(self, node):
+        assert isinstance(node, Node), 'Node should be an instance of Node.'
+        self.adjacent_nodes.append(node)
 
 
 class Server(object):
@@ -51,8 +44,6 @@ class Server(object):
         self.is_active = self.__is_active()
 
         assert self.__has_needed_resources(), 'Server does not have the necessary resources for all components.'
-
-        print('Server {0} on node {1} has no components and is inactive'.format(self.server_id, self.node_id))
 
     def __is_active(self):
         return len(self.components) > 0
@@ -87,4 +78,5 @@ class Component(object):
         assert server_id > -1, 'Every component needs to have a server (server ID should be greater then -1).'
         self.server_id = server_id
 
-
+    def __str__(self):
+        return 'Server ID: {0}, resources needed: {1}'.format(self.server_id, self.resources_needed)

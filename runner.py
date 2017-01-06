@@ -7,7 +7,7 @@ def main():
 
 
 def init_grid():
-    parser = Parser('../data/instance.txt')
+    parser = Parser('data/instance.txt')
     parser.parse()
 
     grid_factory = GridFactory(parser.get_parsed_data())

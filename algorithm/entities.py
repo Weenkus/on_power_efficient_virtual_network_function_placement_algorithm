@@ -38,22 +38,21 @@ class Node(object):
 
 class Server(object):
 
-    def __init__(self, node_id, components, min_power, max_power, resources_available):
+    def __init__(self, server_id, node_id, min_power, max_power, resources_available):
         assert max_power > min_power, 'Max power should be higher then min power.'
         assert node_id > -1, 'Node ID should be a greater then -1.'
-        for component in components:
-            assert isinstance(component, Component), 'Components should be an instance of Component.'
 
+        self.components = []
+        self.server_id = server_id
         self.resources_available = resources_available
         self.node_id = node_id
-        self.components = components
         self.min_power = min_power
         self.max_power = max_power
         self.is_active = self.__is_active()
 
         assert self.__has_needed_resources(), 'Server does not have the necessary resources for all components.'
 
-        print('Server {0} has no components and is inactive'.format(self.node_id))
+        print('Server {0} on node {1} has no components and is inactive'.format(self.server_id, self.node_id))
 
     def __is_active(self):
         return len(self.components) > 0
@@ -67,6 +66,7 @@ class Server(object):
 
     def add_component(self, component):
         assert isinstance(component, Component), 'Component should be an instance of Component'
+        component.add_server_id(server_id=self.server_id)
         self.components.append(component)
 
     def add_components(self, components):
@@ -76,13 +76,15 @@ class Server(object):
 
 class Component(object):
 
-    def __init__(self, server_id, resources_needed):
-        assert server_id > -1, 'Every component needs to have a server (server ID should be greater then -1).'
-
+    def __init__(self, resources_needed, server_id=None):
         self.resources_needed = resources_needed
         self.server_id = server_id
 
     def resources_needed(self):
         return self.resources_needed
+
+    def add_server_id(self, server_id):
+        assert server_id > -1, 'Every component needs to have a server (server ID should be greater then -1).'
+        self.server_id = server_id
 
 

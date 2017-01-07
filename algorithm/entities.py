@@ -1,22 +1,59 @@
 
+class Edge(object):
+
+    def __init__(self, from_node, to_node, delay, capacity, power_usage):
+        assert from_node != to_node, 'Link is between two different nodes.'
+        for node in [from_node, to_node]:
+            assert isinstance(node, Node), 'Nodes should be an instance of Node.'
+
+        self.delay = delay
+        self.capacity = capacity
+        self.power_usage = power_usage
+        self.start_node = from_node
+        self.end_node = to_node
+
+    def __str__(self):
+        return 'Start_node: {0}, end_node: {1}, delay: {2}, capacity: {3}, power_usage: {4}'.format(
+            self.start_node, self.end_node, self.delay, self.capacity, self.power_usage
+        )
+
+
 class Link(object):
 
-    def __init__(self, from_component, to_component, throughput):
-        for component in [from_component, to_component]:
-            assert isinstance(component, Component), 'Components should be an instance of Component.'
-        assert from_component != to_component, 'From and to components should be different.'
+    def __init__(self, start_component, end_component, throughput):
+        for component in [start_component, end_component]:
+            assert isinstance(component, Component), 'Components should be instances of Component.'
+        assert start_component != end_component, 'From and to components should be different.'
 
-        self.from_component = from_component
-        self.to_component = to_component
+        self.from_component = start_component
+        self.to_component = end_component
         self.throughput = throughput
+        self.route = []
+
+    def add_route(self, edges):
+        for edge in edges:
+            assert isinstance(edge, Edge), 'Edges should be instances of Edge.'
+
+        self.route = edges
+
+    def add_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
+        self.route.append(edge)
+
+    def clear_route(self):
+        self.route = []
+
+    def __str__(self):
+        return '\n'.join(self.route)
 
 
 class Node(object):
 
-    def __init__(self, servers, power_usage):
+    def __init__(self, node_id, servers, power_usage):
         for server in servers:
             assert isinstance(server, Server), "Servers should be an instance of Server."
 
+        self.node_id = node_id
         self.servers = servers
         self.power_usage = power_usage
         self.adjacent_nodes = []
@@ -27,6 +64,9 @@ class Node(object):
     def add_adjacent_node(self, node):
         assert isinstance(node, Node), 'Node should be an instance of Node.'
         self.adjacent_nodes.append(node)
+
+    def __str__(self):
+        return 'ID: {0}, power_usage: {1}'.format(self.node_id, self.power_usage)
 
 
 class Server(object):
@@ -48,6 +88,9 @@ class Server(object):
     def __is_active(self):
         return len(self.components) > 0
 
+    def set_activity(self):
+        self.is_active = self.__is_active()
+
     def __has_needed_resources(self):
         resources_needed = sum([component.resources_needed() for component in self.components])
         return resources_needed < self.resources_available
@@ -63,6 +106,11 @@ class Server(object):
     def add_components(self, components):
         for component in components:
             self.add_component(component)
+
+    def __str__(self):
+        return 'ID: {0}, active: {1}, min_power: {2}, max_power: {3}, res_available: {4}'.format(
+            self.server_id, self.is_active, self.min_power, self.max_power, self.resources_available
+        )
 
 
 class Component(object):

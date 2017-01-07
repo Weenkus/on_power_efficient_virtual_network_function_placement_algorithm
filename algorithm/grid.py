@@ -1,4 +1,4 @@
-from algorithm.entities import Component, Link, Node, Server
+from algorithm.entities import Component, Link, Edge, Node, Server
 import numpy as np
 
 
@@ -13,8 +13,9 @@ class GridFactory(object):
         components = self.__create_components(self.data)
         nodes = self.__create_nodes(self.data, servers)
         layout = self.__create_layout(self.data, nodes)
+        links = self.__create_links(self.data, components)
 
-        self.grid = Grid(servers, components, nodes, layout)
+        self.grid = Grid(servers, components, nodes, layout, links)
 
     def __create_servers(self, data):
         min_powers = data['P_min']
@@ -40,6 +41,20 @@ class GridFactory(object):
 
         return np.array(servers)
 
+    def __create_links(self, data, components):
+        demands = data['VmDemands']
+
+        links = []
+        for demand in demands:
+            start_component_id, end_component_id, throughput = demand
+            start_component = components[int(start_component_id) - 1]
+            end_component = components[int(end_component_id) - 1]
+
+            link = Link(start_component, end_component, throughput)
+            links.append(link)
+
+        return links
+
     def __create_components(self, data):
         resources_needed = data['req']
         processor_resources_needed = resources_needed[0]
@@ -62,7 +77,7 @@ class GridFactory(object):
         for node_id, power_usage in zip(range(node_num), power_usages):
 
             current_node_servers = [server for server in servers if server.node_id == node_id]
-            node = Node(servers=current_node_servers, power_usage=power_usage)
+            node = Node(node_id, current_node_servers, power_usage)
             nodes.append(node)
 
         assert node_num == len(nodes), 'Mismatch in node numbers.'
@@ -98,22 +113,11 @@ class GridFactory(object):
         return self.grid
 
 
-class Edge(object):
-
-    def __init__(self, from_node, to_node, delay, capacity, power_usage):
-        assert from_node != to_node, 'Link is between two different nodes.'
-        for node in [from_node, to_node]:
-            assert isinstance(node, Node), 'Nodes should be an instance of Node.'
-
-        self.delay = delay
-        self.capacity = capacity
-        self.power_usage = power_usage
-
-
 class Grid(object):
 
-    def __init__(self, servers, components, nodes, layout):
+    def __init__(self, servers, components, nodes, layout, links):
         self.servers = servers
         self.components = components
         self.nodes = nodes
         self.layout = layout
+        self.links = links

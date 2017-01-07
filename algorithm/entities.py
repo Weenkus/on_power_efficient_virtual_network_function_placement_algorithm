@@ -12,6 +12,10 @@ class Edge(object):
         self.start_node = from_node
         self.end_node = to_node
 
+    def has_node(self, node):
+        assert isinstance(node, Node), 'Node should be an instance of Node.'
+        return node.node_id in [self.start_node.node_id, self.end_node.node_id]
+
     def __str__(self):
         return 'Start_node: {0}, end_node: {1}, delay: {2}, capacity: {3}, power_usage: {4}'.format(
             self.start_node, self.end_node, self.delay, self.capacity, self.power_usage
@@ -42,6 +46,14 @@ class Link(object):
 
     def clear_route(self):
         self.route = []
+
+    def has_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
+        return edge in self.route
+
+    def has_node(self, node):
+        assert isinstance(node, Node), 'Node should be an instance of Node.'
+        return any([edge.has_node(node) for edge in self.route])
 
     def __str__(self):
         return '\n'.join(self.route)
@@ -81,15 +93,11 @@ class Server(object):
         self.node_id = node_id
         self.min_power = min_power
         self.max_power = max_power
-        self.is_active = self.__is_active()
 
         assert self.__has_needed_resources(), 'Server does not have the necessary resources for all components.'
 
-    def __is_active(self):
+    def is_active(self):
         return len(self.components) > 0
-
-    def set_activity(self):
-        self.is_active = self.__is_active()
 
     def __has_needed_resources(self):
         resources_needed = sum([component.resources_needed() for component in self.components])

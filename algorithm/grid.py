@@ -12,10 +12,10 @@ class GridFactory(object):
         servers = self.__create_servers(self.data)
         components = self.__create_components(self.data)
         nodes = self.__create_nodes(self.data, servers)
-        layout = self.__create_layout(self.data, nodes)
+        layout, edges = self.__create_layout(self.data, nodes)
         links = self.__create_links(self.data, components)
 
-        self.grid = Grid(servers, components, nodes, layout, links)
+        self.grid = Grid(servers, components, nodes, layout, links, edges)
 
     def __create_servers(self, data):
         min_powers = data['P_min']
@@ -88,6 +88,7 @@ class GridFactory(object):
         num_nodes = data['numNodes']
 
         layout = [[None] * num_nodes] * num_nodes
+        edges = []
         for edge in edges:
             first_node_id, second_node_id, capacity, power_usage, delay = edge
             first_node_id, second_node_id = int(first_node_id) - 1, int(second_node_id) - 1
@@ -96,13 +97,16 @@ class GridFactory(object):
             second_node = nodes[second_node_id]
 
             new_edge = Edge(first_node, second_node, delay, capacity, power_usage)
-            self.__set_edges(first_node_id, second_node_id, layout, new_edge, nodes)
+            swaped_edge = Edge(second_node, first_node, delay, capacity, power_usage)
+            edges.extend([new_edge, swaped_edge])
 
-        return layout
+            self.__set_edges(first_node_id, second_node_id, layout, new_edge, swaped_edge, nodes)
 
-    def __set_edges(self, first_node_id, second_node_id, layout, new_edge, nodes):
+        return layout, edges
+
+    def __set_edges(self, first_node_id, second_node_id, layout, new_edge, swaped_edge, nodes):
         layout[first_node_id][second_node_id] = new_edge
-        layout[second_node_id][first_node_id] = new_edge
+        layout[second_node_id][first_node_id] = swaped_edge
 
         nodes[first_node_id].add_adjacent_node(nodes[second_node_id])
         nodes[second_node_id].add_adjacent_node(nodes[first_node_id])
@@ -115,9 +119,21 @@ class GridFactory(object):
 
 class Grid(object):
 
-    def __init__(self, servers, components, nodes, layout, links):
+    def __init__(self, servers, components, nodes, layout, links, edges):
         self.servers = servers
         self.components = components
         self.nodes = nodes
         self.layout = layout
         self.links = links
+        self.edges = edges
+
+    def is_active_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of edge.'
+        return any([link.has_edge(edge) for link in self.links])
+
+    def is_active_node(self, node):
+        assert isinstance(node, Node), 'Node should be an instance of node.'
+
+        active_edges = any([link.has_node(node) for link in self.links])
+        active_servers = any([server.is_active() for server in self.servers])
+        return active_edges or active_servers

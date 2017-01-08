@@ -65,6 +65,9 @@ class LinkDemand(object):
         self.link = link
         self.throughput = throughput
 
+    def get_route_length(self):
+        return len(self.link.edges)
+
 
 class ServiceChain(object):
 
@@ -118,7 +121,7 @@ class Server(object):
 
         self.components = []
         self.server_id = server_id
-        self.resources_available = resources_available
+        self.max_resources = resources_available
         self.node_id = node_id
         self.min_power = min_power
         self.max_power = max_power
@@ -130,7 +133,7 @@ class Server(object):
 
     def __has_needed_resources(self):
         resources_needed = sum([component.resources_needed() for component in self.components])
-        return resources_needed < self.resources_available
+        return resources_needed < self.max_resources
 
     def number_of_components(self):
         return len(self.components)
@@ -146,11 +149,18 @@ class Server(object):
 
     def is_using_more_resources_then_available(self):
         resources_used = sum([component.resources_needed for component in self.components])
-        return resources_used > self.resources_available
+        return resources_used > self.max_resources
+
+    def get_available_resources(self):
+        resources_used = sum([component.resources_needed for component in self.components])
+        available_resources = self.max_resources - resources_used
+
+        assert available_resources >= 0, 'Server can not use more resources than is has.'
+        return available_resources
 
     def __str__(self):
         return 'ID: {0}, active: {1}, min_power: {2}, max_power: {3}, res_available: {4}'.format(
-            self.server_id, self.is_active, self.min_power, self.max_power, self.resources_available
+            self.server_id, self.is_active, self.min_power, self.max_power, self.max_resources
         )
 
 

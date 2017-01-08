@@ -158,4 +158,8 @@ class Grid(object):
 
         return throughput
 
+    def components_are_deployed_on_the_same_server(self, component1, component2):
+        return component1.server_id == component2.server_id
 
+    def link_has_both_components_on_same_server(self, link):
+        return self.components_are_deployed_on_the_same_server(link.start_component, link.end_component)

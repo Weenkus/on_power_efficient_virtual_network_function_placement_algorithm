@@ -29,11 +29,15 @@ class Problem(object):
     def __get_server_power_usage(self, server):
         if server.is_active():
             server_components_power_usage = sum([component.resources_needed for component in server.components])
-            average_server_power = (server.max_power - server.min_power) * server.resources_available
+            average_server_power = (server.max_power - server.min_power) * server.max_resources
             server_power = server.min_power + average_server_power * server_components_power_usage
+
             return server_power
         else:
             return 0
+
+    def active_servers(self):
+        return [server for server in self.grid.servers if server.is_active()]
 
 
 class ConstraintService(object):
@@ -48,13 +52,21 @@ class ConstraintService(object):
                 'Servers are not using more resources then they have.'
             ),
             (self.edge_traffic_is_lower_then_edge_capacity, 'Edge traffic is lower then edge capacity.'),
-            (self.service_chains_are_within_max_delay_range, 'Service chains are within max delay range.')
+            (self.service_chains_are_within_max_delay_range, 'Service chains are within max delay range.'),
+            (self.every_link_demand_is_met, 'Ever link demand is not met.')
         ]
+
+    def print_al_constraints(self):
+        for constraint in self.constraints:
+            constraint_function, constraint_description = constraint
+            print('[{0}] {1}'.format(constraint_function(), constraint_description))
 
     def check_all(self):
         for constraint in self.constraints:
             constraint_function, constraint_description = constraint
-            print('[{0}] {1}'.format(constraint_function(), constraint_description))
+            if not constraint_function():
+                return False
+        return True
 
     def components_are_deployed(self):
         for component in self.grid.components:
@@ -78,5 +90,12 @@ class ConstraintService(object):
     def service_chains_are_within_max_delay_range(self):
         for service_chain in self.grid.service_chains:
             if not service_chain.link_delays_are_within_max_delay():
+                return False
+        return True
+
+    def every_link_demand_is_met(self):
+        for link_demand in self.grid.link_demands:
+            components_are_on_same_server = self.grid.link_has_both_components_on_same_server(link_demand.link)
+            if link_demand.get_route_length() == 0 and not components_are_on_same_server:
                 return False
         return True

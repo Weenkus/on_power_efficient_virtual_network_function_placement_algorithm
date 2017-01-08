@@ -41,15 +41,24 @@ class ConstraintService(object):
     def __init__(self, grid):
         self.grid = grid
 
+        self.constraints = [
+            (self.components_are_deployed, 'Every component is deployed.'),
+            (
+                self.servers_did_not_use_more_resources_then_they_have,
+                'Servers are not using more resources then they have.'
+            ),
+            (self.edge_traffic_is_lower_then_edge_capacity, 'Edge traffic is lower then edge capacity.'),
+            (self.service_chains_are_within_max_delay_range, 'Service chains are within max delay range.')
+        ]
+
+    def check_all(self):
+        for constraint in self.constraints:
+            constraint_function, constraint_description = constraint
+            print('[{0}] {1}'.format(constraint_function(), constraint_description))
+
     def components_are_deployed(self):
         for component in self.grid.components:
             if not component.is_deployed_on_server():
-                return False
-        return True
-
-    def servers_are_active(self):
-        for server in self.grid.servers:
-            if not server.is_active():
                 return False
         return True
 
@@ -59,3 +68,15 @@ class ConstraintService(object):
                 return False
         return True
 
+    def edge_traffic_is_lower_then_edge_capacity(self):
+        for edge in self.grid.edges:
+            total_edge_traffic = self.grid.throughput_on_edge(edge)
+            if total_edge_traffic > edge.capacity:
+                return False
+        return True
+
+    def service_chains_are_within_max_delay_range(self):
+        for service_chain in self.grid.service_chains:
+            if not service_chain.link_delays_are_within_max_delay():
+                return False
+        return True

@@ -1,4 +1,4 @@
-from core.entities import Component, ServiceChain, Link, Edge, Node, Server
+from core.entities import Component, ServiceChain, LinkDemand, Link, Edge, Node, Server
 import numpy as np
 
 
@@ -14,9 +14,9 @@ class GridFactory(object):
         nodes = self.__create_nodes(self.data, servers)
         layout, edges = self.__create_layout(self.data, nodes)
         service_chains = self.__create_service_chains(self.data, components)
-        links = self.__create_links(self.data, components)
+        link_demands = self.__create_link_demands_and_links(self.data, components)
 
-        self.grid = Grid(servers, components, nodes, layout, service_chains, edges, links)
+        self.grid = Grid(servers, components, nodes, layout, service_chains, edges, link_demands)
 
     def __create_servers(self, data):
         min_powers = data['P_min']
@@ -44,9 +44,9 @@ class GridFactory(object):
 
     def __create_service_chains(self, data, components):
         service_chains = []
-        for service_chain in data['sc']:
+        for service_chain, service_chain_delay in zip(data['sc'], data['lat']):
             service_chain_components = [components[int(component_id) - 1] for component_id in service_chain]
-            service_chain = ServiceChain(service_chain_components)
+            service_chain = ServiceChain(service_chain_components, service_chain_delay)
             service_chains.append(service_chain)
 
         return service_chains
@@ -100,18 +100,19 @@ class GridFactory(object):
 
         return layout, edges
 
-    def __create_links(self, data, components):
-        links = []
+    def __create_link_demands_and_links(self, data, components):
+        link_demands = []
         for demand in data['VmDemands']:
             start_component_id, end_component_id, throughput = demand
 
             start_component = components[int(start_component_id) - 1]
             end_component = components[int(end_component_id) - 1]
 
-            link = Link(start_component, end_component, throughput)
-            links.append(link)
+            link = Link(start_component, end_component)
+            link_demand = LinkDemand(link, throughput)
+            link_demands.append(link_demand)
 
-        return links
+        return link_demands
 
     def __set_edges(self, first_node_id, second_node_id, layout, new_edge, swaped_edge, nodes):
         layout[first_node_id][second_node_id] = new_edge
@@ -128,22 +129,33 @@ class GridFactory(object):
 
 class Grid(object):
 
-    def __init__(self, servers, components, nodes, layout, service_chains, edges, links):
+    def __init__(self, servers, components, nodes, layout, service_chains, edges, link_demands):
         self.servers = servers
         self.components = components
         self.nodes = nodes
         self.layout = layout
         self.service_chains = service_chains
         self.edges = edges
-        self.links = links
+        self.link_demands = link_demands
 
     def is_active_edge(self, edge):
         assert isinstance(edge, Edge), 'Edge should be an instance of edge.'
-        return any([service_chain.has_edge(edge) for service_chain in self.service_chains])
+        return any([link_demand.link.has_edge(edge) for link_demand in self.link_demands])
 
     def is_active_node(self, node):
         assert isinstance(node, Node), 'Node should be an instance of node.'
 
-        active_edges = any([service_chain.has_node(node) for service_chain in self.service_chains])
+        active_edges = any([link_demand.link.has_node(node) for link_demand in self.link_demands])
         active_servers = any([server.is_active() for server in self.servers])
         return active_edges or active_servers
+
+    def throughput_on_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
+
+        throughput = sum(
+            [link_demand.throughput for link_demand in self.link_demands if link_demand.link.has_edge(edge)]
+        )
+
+        return throughput
+
+

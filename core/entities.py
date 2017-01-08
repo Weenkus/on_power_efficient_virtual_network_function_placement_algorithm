@@ -25,47 +25,67 @@ class Edge(object):
 
 class Link(object):
 
-    def __init__(self, start_component, end_component, throughput):
+    def __init__(self, start_component, end_component):
         for component in [start_component, end_component]:
             assert isinstance(component, Component), 'Components should be instances of Component.'
 
         self.start_component = start_component
         self.end_component = end_component
+        self.edges = []
+
+    def add_route(self, edges):
+        for edge in edges:
+            assert isinstance(edge, Edge), 'Edges should be instances of Edge.'
+        self.edges = edges
+
+    def add_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
+        self.edges.append(edge)
+
+    def clear_route(self):
+        self.edges = []
+
+    def has_edge(self, edge):
+        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
+        return edge in self.edges
+
+    def has_node(self, node):
+        assert isinstance(node, Node), 'Node should be an instance of Node.'
+        return any([edge.has_node(node) for edge in self.edges])
+
+    def __str__(self):
+        return '\n'.join(self.edges) + '\n'
+
+
+class LinkDemand(object):
+
+    def __init__(self, link, throughput):
+        assert isinstance(link, Link), 'Link should be an instance of Link.'
+
+        self.link = link
         self.throughput = throughput
 
 
 class ServiceChain(object):
 
-    def __init__(self, components):
+    def __init__(self, components, max_delay):
         for component in components:
             assert isinstance(component, Component), 'Components should be instances of Component.'
 
         self.components = components
-        self.route = []
+        self.max_delay = max_delay
+        self.links = []
 
-    def add_route(self, edges):
-        for edge in edges:
-            assert isinstance(edge, Edge), 'Edges should be instances of Edge.'
+    def get_delay(self):
+        delay = 0
+        for link in self.links:
+            for edge in link.edges:
+                delay += edge.delay
 
-        self.route = edges
+        return delay
 
-    def add_edge(self, edge):
-        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
-        self.route.append(edge)
-
-    def clear_route(self):
-        self.route = []
-
-    def has_edge(self, edge):
-        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
-        return edge in self.route
-
-    def has_node(self, node):
-        assert isinstance(node, Node), 'Node should be an instance of Node.'
-        return any([edge.has_node(node) for edge in self.route])
-
-    def __str__(self):
-        return '\n'.join(self.route) + '\n'
+    def link_delays_are_within_max_delay(self):
+        return self.max_delay > self.get_delay()
 
 
 class Node(object):

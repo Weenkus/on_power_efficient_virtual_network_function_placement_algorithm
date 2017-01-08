@@ -1,4 +1,4 @@
-from algorithm.entities import Component, Link, Edge, Node, Server
+from core.entities import Component, Link, Edge, Node, Server
 import numpy as np
 
 

@@ -1,4 +1,4 @@
-from algorithm.problem import Problem
+from core.problem import Problem
 
 
 def main():

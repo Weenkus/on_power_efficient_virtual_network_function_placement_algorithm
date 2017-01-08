@@ -1,6 +1,6 @@
 import numpy as np
-from algorithm.grid import GridFactory
-from algorithm.parser import Parser
+from core.grid import GridFactory
+from core.parser import Parser
 
 
 class Problem(object):

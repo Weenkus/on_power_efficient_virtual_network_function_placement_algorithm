@@ -102,3 +102,19 @@ class ConstraintService(object):
             if link_demand.get_route_length() == 0 and not components_are_on_same_server:
                 return False
         return True
+
+
+class WriterService(object):
+
+    def __init__(self, program):
+        self.program = program
+
+    def write(self, file_path=None):
+        if file_path is None:
+            print(self.__generate_output_string())
+        else:
+            with open(file_path, 'w') as output_file:
+                output_file.write(self.__generate_output_string())
+
+    def __generate_output_string(self):
+        raise NotImplementedError

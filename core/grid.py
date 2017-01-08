@@ -146,7 +146,7 @@ class Grid(object):
         assert isinstance(node, Node), 'Node should be an instance of node.'
 
         active_edges = any([link_demand.link.has_node(node) for link_demand in self.link_demands])
-        active_servers = any([server.is_active() for server in self.servers])
+        active_servers = any([server.is_active() for server in node.servers])
         return active_edges or active_servers
 
     def throughput_on_edge(self, edge):
@@ -163,3 +163,8 @@ class Grid(object):
 
     def link_has_both_components_on_same_server(self, link):
         return self.components_are_deployed_on_the_same_server(link.start_component, link.end_component)
+
+    def get_servers_node(self, server):
+        for node in self.nodes:
+            if node.node_id == server.node_id:
+                return node

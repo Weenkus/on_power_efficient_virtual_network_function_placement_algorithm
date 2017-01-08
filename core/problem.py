@@ -24,12 +24,15 @@ class Problem(object):
         nodes_power_costs = [node.power_usage for node in self.grid.nodes if self.grid.is_active_node(node)]
         servers_power_costs = [self.__get_server_power_usage(server) for server in self.grid.servers]
 
+        print(sum(edges_power_costs), sum(nodes_power_costs), sum(servers_power_costs))
         return sum(edges_power_costs) + sum(nodes_power_costs) + sum(servers_power_costs)
 
     def __get_server_power_usage(self, server):
-        if server.is_active():
+        node = self.grid.get_servers_node(server)
+
+        if server.is_active() and self.grid.is_active_node(node):
             server_components_power_usage = sum([component.resources_needed for component in server.components])
-            average_server_power = (server.max_power - server.min_power) * server.max_resources
+            average_server_power = (server.max_power - server.min_power) / server.max_resources
             server_power = server.min_power + average_server_power * server_components_power_usage
 
             return server_power

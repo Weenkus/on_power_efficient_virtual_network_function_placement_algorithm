@@ -7,5 +7,5 @@ class Algorithm(object):
     def deploy_components(self):
         raise NotImplementedError
 
-    def route_components(self):
+    def deploy_routes(self):
         raise NotImplementedError

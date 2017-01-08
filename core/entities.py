@@ -1,4 +1,5 @@
 
+
 class Edge(object):
 
     def __init__(self, from_node, to_node, delay, capacity, power_usage):
@@ -27,11 +28,19 @@ class Link(object):
     def __init__(self, start_component, end_component, throughput):
         for component in [start_component, end_component]:
             assert isinstance(component, Component), 'Components should be instances of Component.'
-        assert start_component != end_component, 'From and to components should be different.'
 
-        self.from_component = start_component
-        self.to_component = end_component
+        self.start_component = start_component
+        self.end_component = end_component
         self.throughput = throughput
+
+
+class ServiceChain(object):
+
+    def __init__(self, components):
+        for component in components:
+            assert isinstance(component, Component), 'Components should be instances of Component.'
+
+        self.components = components
         self.route = []
 
     def add_route(self, edges):
@@ -56,7 +65,7 @@ class Link(object):
         return any([edge.has_node(node) for edge in self.route])
 
     def __str__(self):
-        return '\n'.join(self.route)
+        return '\n'.join(self.route) + '\n'
 
 
 class Node(object):
@@ -115,6 +124,10 @@ class Server(object):
         for component in components:
             self.add_component(component)
 
+    def is_using_more_resources_then_available(self):
+        resources_used = sum([component.resources_needed for component in self.components])
+        return resources_used > self.resources_available
+
     def __str__(self):
         return 'ID: {0}, active: {1}, min_power: {2}, max_power: {3}, res_available: {4}'.format(
             self.server_id, self.is_active, self.min_power, self.max_power, self.resources_available
@@ -133,6 +146,9 @@ class Component(object):
     def add_server_id(self, server_id):
         assert server_id > -1, 'Every component needs to have a server (server ID should be greater then -1).'
         self.server_id = server_id
+
+    def is_deployed_on_server(self):
+        return self.server_id is not None
 
     def __str__(self):
         return 'Server ID: {0}, resources needed: {1}'.format(self.server_id, self.resources_needed)

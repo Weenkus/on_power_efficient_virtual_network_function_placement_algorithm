@@ -80,12 +80,11 @@ class GridFactory(object):
         return nodes
 
     def __create_layout(self, data, nodes):
-        edges = data['Edges']
         num_nodes = data['numNodes']
 
         layout = [[None] * num_nodes] * num_nodes
         edges = []
-        for edge in edges:
+        for edge in data['Edges']:
             first_node_id, second_node_id, capacity, power_usage, delay = edge
             first_node_id, second_node_id = int(first_node_id) - 1, int(second_node_id) - 1
 
@@ -168,3 +167,42 @@ class Grid(object):
         for node in self.nodes:
             if node.node_id == server.node_id:
                 return node
+
+    def get_component_node(self, component):
+        server = self.servers[component.server_id - 1]
+        return self.get_servers_node(server)
+
+    def get_routes(self, start_component, end_component):
+        start_node = self.get_component_node(start_component)
+        end_node = self.get_component_node(end_component)
+
+        if start_node.node_id != end_node.node_id:
+            return list(self.depth_first_search(start_node, end_node))
+        else:
+            return []
+
+    def depth_first_search(self, start_node, end_node):
+        stack = [(start_node, [start_node])]
+        while stack:
+            (vertex, path) = stack.pop()
+            for next in set(vertex.adjacent_nodes) - set(path):
+                if next == end_node:
+                    yield path + [next]
+                else:
+                    stack.append((next, path + [next]))
+
+    def add_link_route(self, link, nodes, throughput):
+        link.add_route(nodes)
+        edges = []
+        for i in range(0, len(nodes)-1, 2):
+            start_node = nodes[i]
+            end_node = nodes[i+1]
+            edge = self.get_edge(start_node, end_node)
+            edge.add_capacity(throughput)
+            edges.append(edge)
+
+        link.edges = edges
+
+    def get_edge(self, start_node, end_node):
+        return self.layout[start_node.node_id][end_node.node_id]
+

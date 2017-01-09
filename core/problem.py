@@ -100,6 +100,7 @@ class ConstraintService(object):
         for link_demand in self.grid.link_demands:
             components_are_on_same_server = self.grid.link_has_both_components_on_same_server(link_demand.link)
             if link_demand.get_route_length() == 0 and not components_are_on_same_server:
+                print(link_demand)
                 return False
         return True
 

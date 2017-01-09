@@ -1,3 +1,4 @@
+from utils.exceptions import OutOfCapacityException
 
 
 class Edge(object):
@@ -9,6 +10,7 @@ class Edge(object):
 
         self.delay = delay
         self.capacity = capacity
+        self.capacity_used = 0
         self.power_usage = power_usage
         self.start_node = from_node
         self.end_node = to_node
@@ -16,6 +18,15 @@ class Edge(object):
     def has_node(self, node):
         assert isinstance(node, Node), 'Node should be an instance of Node.'
         return node.node_id in [self.start_node.node_id, self.end_node.node_id]
+
+    def get_available_capacity(self):
+        return self.capacity - self.capacity_used
+
+    def add_capacity(self, capacity):
+        if capacity > self.get_available_capacity():
+            raise OutOfCapacityException
+
+        self.capacity += capacity
 
     def __str__(self):
         return 'Start_node: {0}, end_node: {1}, delay: {2}, capacity: {3}, power_usage: {4}'.format(
@@ -32,18 +43,12 @@ class Link(object):
         self.start_component = start_component
         self.end_component = end_component
         self.edges = []
+        self.nodes = []
 
-    def add_route(self, edges):
-        for edge in edges:
-            assert isinstance(edge, Edge), 'Edges should be instances of Edge.'
-        self.edges = edges
-
-    def add_edge(self, edge):
-        assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
-        self.edges.append(edge)
-
-    def clear_route(self):
-        self.edges = []
+    def add_route(self, nodes):
+        for node in nodes:
+            assert isinstance(node, Node), 'Nodes should be instances of Node.'
+        self.nodes = nodes
 
     def has_edge(self, edge):
         assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
@@ -54,7 +59,7 @@ class Link(object):
         return any([edge.has_node(node) for edge in self.edges])
 
     def __str__(self):
-        return '\n'.join(self.edges) + '\n'
+        return '[{0} || {1}]'.format(self.start_component, self.end_component)
 
 
 class LinkDemand(object):
@@ -67,6 +72,9 @@ class LinkDemand(object):
 
     def get_route_length(self):
         return len(self.link.edges)
+
+    def __str__(self):
+        return self.link.__str__()
 
 
 class ServiceChain(object):

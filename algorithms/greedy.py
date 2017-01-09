@@ -1,5 +1,6 @@
 from algorithms import Algorithm
 from utils.exceptions import OutOfCapacityException
+from random import shuffle
 import random
 
 
@@ -14,9 +15,6 @@ class GreedyHeuristic(Algorithm):
 
         for component in components:
             for server in servers:
-                if random.randint(1, 10) == 1:
-                    continue
-
                 if server.get_available_resources() > component.resources_needed:
                     server.add_component(component)
                     break

@@ -26,7 +26,7 @@ class Edge(object):
         if capacity > self.get_available_capacity():
             raise OutOfCapacityException
 
-        self.capacity += capacity
+        self.capacity_used += capacity
 
     def __str__(self):
         return 'Start_node: {0}, end_node: {1}, delay: {2}, capacity: {3}, power_usage: {4}'.format(

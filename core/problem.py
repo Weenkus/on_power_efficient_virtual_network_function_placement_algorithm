@@ -99,10 +99,13 @@ class ConstraintService(object):
     def every_link_demand_is_met(self):
         constraint_failed = False
         for link_demand in self.grid.link_demands:
-            components_are_on_same_server = self.grid.link_has_both_components_on_same_server(link_demand.link)
-            if link_demand.get_route_length() == 0 and not components_are_on_same_server:
-                #print(link_demand)
+            components_are_on_same_node = self.grid.are_components_on_same_node(
+                link_demand.link.start_component, link_demand.link.end_component
+            )
+
+            if link_demand.get_route_length() == 0 and not components_are_on_same_node:
                 constraint_failed = True
+
         return not constraint_failed
 
 

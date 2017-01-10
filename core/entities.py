@@ -28,6 +28,9 @@ class Edge(object):
 
         self.capacity_used += capacity
 
+    def is_active(self):
+        return self.capacity_used > 0
+
     def __str__(self):
         return 'Start_node: {0}, end_node: {1}, delay: {2}, capacity: {3}, power_usage: {4}'.format(
             self.start_node, self.end_node, self.delay, self.capacity, self.power_usage
@@ -49,6 +52,9 @@ class Link(object):
         for node in nodes:
             assert isinstance(node, Node), 'Nodes should be instances of Node.'
         self.nodes = nodes
+
+    def clear_route(self):
+        self.nodes = []
 
     def has_edge(self, edge):
         assert isinstance(edge, Edge), 'Edge should be an instance of Edge.'
@@ -119,6 +125,9 @@ class Node(object):
 
     def __str__(self):
         return 'ID: {0}, power_usage: {1}'.format(self.node_id, self.power_usage)
+
+    def __repr__(self):
+        return str(self.node_id)
 
 
 class Server(object):

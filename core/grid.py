@@ -1,4 +1,5 @@
 from core.entities import Component, ServiceChain, LinkDemand, Link, Edge, Node, Server
+from utils.exceptions import OutOfCapacityException
 import numpy as np
 
 
@@ -172,12 +173,16 @@ class Grid(object):
         server = self.servers[component.server_id - 1]
         return self.get_servers_node(server)
 
+    def are_components_on_same_node(self, component1, component2):
+        return self.get_component_node(component1) == self.get_component_node(component2)
+
     def get_routes(self, start_component, end_component):
         start_node = self.get_component_node(start_component)
         end_node = self.get_component_node(end_component)
 
         if start_node.node_id != end_node.node_id:
-            return list(self.depth_first_search(start_node, end_node))
+            routes = list(self.depth_first_search(start_node, end_node))
+            return routes
         else:
             return []
 
@@ -186,23 +191,29 @@ class Grid(object):
         while stack:
             (vertex, path) = stack.pop()
             for next in set(vertex.adjacent_nodes) - set(path):
-                if next == end_node:
+                if next.node_id == end_node.node_id:
                     yield path + [next]
                 else:
                     stack.append((next, path + [next]))
 
     def add_link_route(self, link, nodes, throughput):
+        edges = self.transform_node_route_to_edge_route(nodes)
+        self.add_capacity_to_route(edges, throughput)
         link.add_route(nodes)
-        edges = []
-        for i in range(0, len(nodes)-1, 2):
-            start_node = nodes[i]
-            end_node = nodes[i+1]
-            edge = self.get_edge(start_node, end_node)
-            edge.add_capacity(throughput)
-            edges.append(edge)
-
         link.edges = edges
+
+    def transform_node_route_to_edge_route(self, nodes):
+        return [self.get_edge(start_node=nodes[i-1], end_node=nodes[i]) for i in range(1, len(nodes))]
+
+    def add_capacity_to_route(self, edges, throughput):
+        for edge in edges:
+            edge.add_capacity(throughput)
 
     def get_edge(self, start_node, end_node):
         return self.layout[start_node.node_id][end_node.node_id]
+
+    def min_available_route_capacity(self, nodes):
+        edges = self.transform_node_route_to_edge_route(nodes)
+        return min([edge.get_available_capacity() for edge in edges])
+
 

@@ -58,7 +58,7 @@ class GridFactory(object):
 
         components = []
         for component_id, resources_needed in enumerate(processor_resources_needed):
-            component = Component(resources_needed)
+            component = Component(resources_needed, component_id)
             components.append(component)
 
         return components

@@ -1,5 +1,6 @@
 from core.grid import GridFactory
 from core.parser import Parser
+import numpy as np
 
 
 class Problem(object):
@@ -122,4 +123,33 @@ class WriterService(object):
                 output_file.write(self.__generate_output_string())
 
     def __generate_output_string(self):
-        raise NotImplementedError
+        output_string = 'x={0};\n\nroutes={1};'.format(
+            self.__generate_component_server_matrix(),
+            self.__generate_routes()
+        )
+        return output_string
+
+    def __generate_component_server_matrix(self):
+        component_server_matrix = []
+        server_num = len(self.program.grid.servers)
+        for component in self.program.grid.components:
+            component_sever_one_hot = [0] * server_num
+            component_sever_one_hot[component.server_id] = 1
+
+            row_format = '[{0}]'.format((','.join(map(lambda x: str(x), component_sever_one_hot))))
+            component_server_matrix.append(row_format)
+
+        return '[\n{0}\n]'.format('\n'.join(component_server_matrix))
+
+    def __generate_routes(self):
+        routes = []
+        for link_demand in self.program.grid.link_demands:
+            node_route = link_demand.link.nodes
+            route_string = '<{0},{1},{2}>'.format(
+                link_demand.link.start_component.component_id,
+                link_demand.link.end_component.component_id,
+                node_route.__str__().replace(' ', '')
+            )
+            routes.append(route_string)
+
+        return '{\n' + ',\n'.join(routes) + ',\n}'

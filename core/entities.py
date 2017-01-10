@@ -183,9 +183,10 @@ class Server(object):
 
 class Component(object):
 
-    def __init__(self, resources_needed, server_id=None):
+    def __init__(self, resources_needed, component_id=None, server_id=None):
         self.resources_needed = resources_needed
         self.server_id = server_id
+        self.component_id = component_id
 
     def resources_needed(self):
         return self.resources_needed

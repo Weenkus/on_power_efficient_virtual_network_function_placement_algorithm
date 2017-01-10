@@ -57,7 +57,7 @@ class ConstraintService(object):
             ),
             (self.edge_traffic_is_lower_then_edge_capacity, 'Edge traffic is lower then edge capacity.'),
             (self.service_chains_are_within_max_delay_range, 'Service chains are within max delay range.'),
-            (self.every_link_demand_is_met, 'Ever link demand is not met.')
+            (self.every_link_demand_is_met, 'Ever link demand is met.')
         ]
 
     def print_al_constraints(self):

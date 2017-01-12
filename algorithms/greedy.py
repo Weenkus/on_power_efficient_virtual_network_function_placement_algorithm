@@ -8,10 +8,13 @@ class GreedyHeuristic(Algorithm):
         super(GreedyHeuristic, self).__init__(problem)
 
     def deploy_components(self):
-        servers = sorted(self.problem.grid.servers, key=lambda x: x.max_resources, reverse=True)
+        servers = self.problem.grid.servers
+        servers = sorted(servers, key=lambda x: x.node_id, reverse=True)
         components = sorted(self.problem.grid.components, key=lambda x: x.resources_needed, reverse=False)
 
         for component in components:
+            #random.shuffle(servers)
+
             for server in servers:
                 if server.get_available_resources() > component.resources_needed:
                     server.add_component(component)
@@ -22,10 +25,12 @@ class GreedyHeuristic(Algorithm):
 
     def deploy_routes(self):
         link_demands = sorted(self.problem.grid.link_demands, key=lambda x: x.throughput, reverse=True)
+        random.shuffle(link_demands)
 
         empty_demands = []
         for link_demand in link_demands:
             link = link_demand.link
+
             routes = self.problem.grid.get_routes(link.start_component, link.end_component)
 
             if len(routes) > 0:

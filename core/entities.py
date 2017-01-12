@@ -62,7 +62,7 @@ class Link(object):
 
     def has_node(self, node):
         assert isinstance(node, Node), 'Node should be an instance of Node.'
-        return any([edge.has_node(node) for edge in self.edges])
+        return node in self.nodes
 
     def __str__(self):
 

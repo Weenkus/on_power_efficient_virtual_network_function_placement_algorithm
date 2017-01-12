@@ -105,6 +105,9 @@ class GridFactory(object):
         for demand in data['VmDemands']:
             start_component_id, end_component_id, throughput = demand
 
+            if start_component_id in [43, 44] or end_component_id in [43, 44]:
+                continue
+
             start_component = components[int(start_component_id) - 1]
             end_component = components[int(end_component_id) - 1]
 

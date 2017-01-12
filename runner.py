@@ -4,19 +4,24 @@ from algorithms.greedy import GreedyHeuristic
 
 def main():
     problem = Problem(file_path='data/instance.txt')
-    problem.init()
 
-    greedy = GreedyHeuristic(problem)
-    greedy.deploy_components()
-    greedy.deploy_routes()
-    print('Cost: {0}\n'.format(problem.fitness()))
+    for i in range(1000000):
+        problem.init()
 
-    problem.constraint_service.check_all()
-    problem.constraint_service.print_al_constraints()
+        greedy = GreedyHeuristic(problem)
+        greedy.deploy_components()
+        greedy.deploy_routes()
+        cost = problem.fitness()
+        print('Cost: {0}\n'.format(cost))
 
-    print()
-    writer = WriterService(problem)
-    writer.write(file_path='solution.txt')
+        if cost < 4085:
+            problem.constraint_service.check_all()
+            problem.constraint_service.print_al_constraints()
+
+            print()
+            writer = WriterService(problem)
+            writer.write(file_path='solutions/solution.txt')
+            break
 
 
 if __name__ == '__main__':

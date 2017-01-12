@@ -65,7 +65,8 @@ class Link(object):
         return any([edge.has_node(node) for edge in self.edges])
 
     def __str__(self):
-        return '[{0} || {1}]'.format(self.start_component, self.end_component)
+
+        return '[{0} || {1}] - {2}'.format(self.start_component, self.end_component, self.nodes)
 
 
 class LinkDemand(object):
@@ -124,10 +125,10 @@ class Node(object):
         self.adjacent_nodes.append(node)
 
     def __str__(self):
-        return 'ID: {0}, power_usage: {1}'.format(self.node_id, self.power_usage)
+        return 'ID: {0}, power_usage: {1}'.format(self.node_id + 1, self.power_usage)
 
     def __repr__(self):
-        return str(self.node_id)
+        return str(self.node_id + 1)
 
 
 class Server(object):
@@ -199,4 +200,4 @@ class Component(object):
         return self.server_id is not None
 
     def __str__(self):
-        return 'Server ID: {0}, resources needed: {1}'.format(self.server_id, self.resources_needed)
+        return 'ser_id: {0}, res_need: {1}'.format(self.server_id + 1, self.resources_needed)

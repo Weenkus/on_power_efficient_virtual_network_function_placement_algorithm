@@ -16,7 +16,7 @@ def main():
 
     print()
     writer = WriterService(problem)
-    writer.write()
+    writer.write(file_path='solution.txt')
 
 
 if __name__ == '__main__':

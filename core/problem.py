@@ -144,11 +144,21 @@ class WriterService(object):
     def __generate_routes(self):
         routes = []
         for link_demand in self.program.grid.link_demands:
-            node_route = link_demand.link.nodes
+            # print(self.program.grid.get_component_node(link_demand.link.start_component))
+            # print(self.program.grid.get_component_node(link_demand.link.end_component))
+            # print(link_demand)
+            # print()
+
+            node_route = link_demand.link.nodes.__str__().replace(' ', '')
+
+            if node_route == '[]':
+                node = self.program.grid.get_component_node(link_demand.link.end_component)
+                node_route = '[%d]' % (node.node_id + 1)
+
             route_string = '<{0},{1},{2}>'.format(
-                link_demand.link.start_component.component_id,
-                link_demand.link.end_component.component_id,
-                node_route.__str__().replace(' ', '')
+                link_demand.link.start_component.component_id + 1,
+                link_demand.link.end_component.component_id + 1,
+                node_route
             )
             routes.append(route_string)
 

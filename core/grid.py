@@ -170,7 +170,7 @@ class Grid(object):
                 return node
 
     def get_component_node(self, component):
-        server = self.servers[component.server_id - 1]
+        server = self.servers[component.server_id]
         return self.get_servers_node(server)
 
     def are_components_on_same_node(self, component1, component2):

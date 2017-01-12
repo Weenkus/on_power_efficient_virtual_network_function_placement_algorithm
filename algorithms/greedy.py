@@ -8,8 +8,8 @@ class GreedyHeuristic(Algorithm):
         super(GreedyHeuristic, self).__init__(problem)
 
     def deploy_components(self):
-        servers = sorted(self.problem.grid.servers, key=lambda x: x.max_power, reverse=True)
-        components = sorted(self.problem.grid.components, key=lambda x: x.resources_needed, reverse=True)
+        servers = sorted(self.problem.grid.servers, key=lambda x: x.max_resources, reverse=True)
+        components = sorted(self.problem.grid.components, key=lambda x: x.resources_needed, reverse=False)
 
         for component in components:
             for server in servers:
@@ -21,7 +21,7 @@ class GreedyHeuristic(Algorithm):
         print('Empty servers: {0} - {1}'.format(len(empty_servers), empty_servers))
 
     def deploy_routes(self):
-        link_demands = sorted(self.problem.grid.link_demands, key=lambda x: x.throughput, reverse=False)
+        link_demands = sorted(self.problem.grid.link_demands, key=lambda x: x.throughput, reverse=True)
 
         empty_demands = []
         for link_demand in link_demands:
